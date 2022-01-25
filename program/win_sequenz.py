@@ -126,16 +126,8 @@ class Window_seq:
         self.win_seq = tk.Tk()
         self.win_seq.title("Magnetic Resonance Imaging - Sequenz Manager")
         # self.win_seq.wm_iconbitmap(bitmap=logo_path)
-        try:
-            # windows
-            # self.win_seq.wm_iconbitmap(
-            #    bitmap="C:/Users/MALIN Philipp/git/bacharbeit/program/icon_logo.ico")
-
-            # linux
-            self.win_seq.wm_iconbitmap(
-                bitmap="C:/Users/MALIN Philipp/git/bacharbeit/program/icon_logo.xbm")
-        except Exception:
-            pass
+        self.win_seq.wm_iconbitmap(
+            bitmap="C:/Users/MALIN Philipp/git/bacharbeit/program/icon_logo.ico")
 
         self.win_seq.geometry("1200x1000")  # "1000x750+400+100"
         # (width_minsize=1200, height_minsize=800)
@@ -566,54 +558,44 @@ class Window_seq:
         self.repetition_time_input.grid(row=1, column=1, sticky="ew")
         self.repetition_time_input.insert(0, self.repetition_time)
 
-        # number of repetitions repetition_num
-        lable_repetition_num = tk.Label(
-            frame_readout, text="number of Repetitions", bg='grey')
-        lable_repetition_num.grid(row=2, column=0, sticky="ew")
-
-        self.repetition_num_input = tk.Entry(
-            frame_readout, fg="black", bg="white")
-        self.repetition_num_input.grid(row=2, column=1, sticky="ew")
-        self.repetition_num_input.insert(0, self.repetition_time)
-
         # Acquirer
         lable_acquirer = tk.Label(
             frame_readout, text="Acquirer time in ms", bg='grey')
-        lable_acquirer.grid(row=3, column=0, sticky="ew")
+        lable_acquirer.grid(row=2, column=0, sticky="ew")
 
         self.acquisition_time_input = tk.Entry(
             frame_readout, fg="black", bg="white")
-        self.acquisition_time_input.grid(row=3, column=1, sticky="ew")
+        self.acquisition_time_input.grid(row=2, column=1, sticky="ew")
         self.acquisition_time_input.insert(0, self.acquisition_time)
 
         # gate_signal
         lable_gate_signal = tk.Label(
             frame_readout, text="gate_signal array", bg='grey')
-        lable_gate_signal.grid(row=4, column=0, sticky="ew")
+        lable_gate_signal.grid(row=3, column=0, sticky="ew")
 
         self.gate_signal_input = tk.Entry(
             frame_readout, fg="black", bg="white")
-        self.gate_signal_input.grid(row=4, column=1, sticky="ew")
+        self.gate_signal_input.grid(row=3, column=1, sticky="ew")
         self.gate_signal_input.insert(0, self.gate_signal)
 
         # blank_time
         lable_blank_time = tk.Label(
             frame_readout, text="Blanking time in ms", bg='grey')
-        lable_blank_time.grid(row=5, column=0, sticky="ew")
+        lable_blank_time.grid(row=4, column=0, sticky="ew")
 
         self.blank_time_input = tk.Entry(
             frame_readout, fg="black", bg="white")
-        self.blank_time_input.grid(row=5, column=1, sticky="ew")
+        self.blank_time_input.grid(row=4, column=1, sticky="ew")
         self.blank_time_input.insert(0, self.blank_time)
 
         # window_time
         lable_window_time = tk.Label(
             frame_readout, text="Window Time in ms", bg='grey')
-        lable_window_time.grid(row=6, column=0, sticky="ew")
+        lable_window_time.grid(row=5, column=0, sticky="ew")
 
         self.window_time_input = tk.Entry(
             frame_readout, fg="black", bg="white")
-        self.window_time_input.grid(row=6, column=1, sticky="ew")
+        self.window_time_input.grid(row=5, column=1, sticky="ew")
         self.window_time_input.insert(0, self.window_time)
 
         # # Phase
@@ -732,7 +714,6 @@ class Window_seq:
         self.repetition_time = self.repetition_time_input.get()
         self.acquisition_time = self.acquisition_time_input.get()
         self.gate_signal = self.gate_signal_input.get()
-        self.repetition_num = self.repetition_num_input.get()
 
         # read SDR Settings
         self.correction_tx_i_dc = self.correction_tx_i_dc_input.get()
@@ -789,10 +770,9 @@ class Window_seq:
         configParser_new["setting"]["blank_time"] = str(self.blank_time)
         configParser_new["setting"]["window_time"] = str(self.window_time)
 
-        configParser_new["setting"]["samplerate"] = str(self.samplerate)
-        configParser_new["setting"]["averaging"] = str(self.averaging)
-        # configParser_new["setting"]["repetition_num"] = str(
-        #    self.repetition_num)
+        # configParser_new["setting"]["band_freq"] = str(self.samplerate)
+        # configParser_new["setting"]["band_freq"] = str(self.averaging)
+        # configParser_new["setting"]["band_freq"] = str(self.repetition_num)
 
         configParser_new["setting"]["lo_freq"] = str(self.target_freq *
                                                      1000000 - self.band_freq * 1000000)
@@ -847,8 +827,6 @@ class Window_seq:
         configParser_new["Readout"]["acquisition_time"] = str(
             self.acquisition_time)
         configParser_new["Readout"]["gate_signal"] = str(self.gate_signal)
-        configParser_new["Readout"]["repetition_number"] = str(
-            self.repetition_num)
 
         # write configfile
         with open(path_settings, "w") as configfile:

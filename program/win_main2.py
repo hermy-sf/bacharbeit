@@ -13,9 +13,14 @@ import tkinter as tk
 import PIL.Image as image
 import datetime
 
+# import module for seqienz
+import win_sequenz
+
+
 import tkinter.ttk as TTK  # use for Combobox
 from PIL import ImageTk, Image  # .jpg
 
+# variable handeling
 import variables
 value_set = variables.Value_Settings()
 print(value_set._freq_start)
@@ -35,9 +40,16 @@ var_setting = value_set.import_setting
 file_set = variables.File_Settings(value_set)
 # file_setting = file_set.save_experiment   #open experiment strukture
 
+# set defalt Sequenz
+Sequenz = win_sequenz.Window_seq()
+# win_sequenz.Window_seq( self.get_values()))
+# Sequenz.window_sequenz()
+#var_sequenz = Sequenz.save2cfg()
+
 # Start SDR and send Tune and Match to arduino
 # run_external.send_sdr()
 # run_external.send_tune_match()
+
 
 ##############
 
@@ -108,6 +120,7 @@ class window_main(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        self.value_sequenz = Sequenz.save2cfg()
 
         # main window
         logger_win_main.info("start__ win_main2 start class window_main init")
@@ -129,11 +142,11 @@ class window_main(tk.Tk):
         #     self.wm_iconbitmap(bitmap=log_path)
         # Fensterbreite,hoehe, on secreen offset x, on screen offset y
         self.minsize(380, 400)  # (width_minsize=1200, height_minsize=800)
-        self.maxsize(1200, 850)
-        self.geometry("1000x750+400+100")
+        # self.maxsize(1200, 850)
+        # self.geometry("1000x750+400+100")
 
         window_width = 1000
-        window_height = 750
+        window_height = 800
 
         # get the screen dimension to center window on screen
         screen_width = self.winfo_screenwidth()
@@ -143,11 +156,12 @@ class window_main(tk.Tk):
         print("______window _" +
               f'{window_width}x{window_height}+{center_x}+{center_y}')
         self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        self.geometry("1000x800")
 
         self.option_add("Helvetica", '10')  # Frischart und groesse
         # self.resizable(width=False, height=False) #  False = no resize
 
-        # self.update()
+        self.update()
         # self.update_idletasks()
         logger_win_main.info("win_main2 start class window_main init")
 
@@ -159,7 +173,7 @@ class window_main(tk.Tk):
         datei_menu.add_command(label="Save", command=self.get_values)
         datei_menu.add_command(
             label="auto-save", command=self.autosave)  # save_all)
-        datei_menu.add_command(label="Close all", command=save_quit_all)
+        datei_menu.add_command(label="Close all", command=self.save_quit_all)
         datei_menu.add_separator()  # Trennlinie
         datei_menu.add_command(label="load last values",
                                command=self.load_settings2)
@@ -257,7 +271,7 @@ class window_main(tk.Tk):
 
         # Butten save settings to settings.cfg
         self.button_run = tk.Button(
-            self.frame_measure, text="save settings", command=self.save_measurment, foreground="green")
+            self.frame_measure, text="SAVE all", command=self.save_measurment, foreground="green")
         self.button_run.grid(row=5, column=0, rowspan=1,
                              padx=5, pady=5, sticky="ew")
 
@@ -322,6 +336,15 @@ class window_main(tk.Tk):
             frame_tm, text="Send to Arduino", command=self.send_arduino, foreground="green")
         self.send_TMfile.grid(row=4, column=1, padx=5, pady=5, columnspan=1)
 
+        # Comport Arduino
+        self.Match_U_max_lable = tk.Label(frame_tm, text="Arduino COMport: ")
+        self.Match_U_max_lable.grid(row=5, column=0, padx=5, pady=5)
+
+        self.arduino_com_input = tk.Entry(
+            frame_tm, fg="black", bg="white", width=10)
+        self.arduino_com_input.grid(row=5, column=1, padx=5, pady=5)
+        self.arduino_com_input.insert(0, "COM 4")
+
         ######----- info box  ------######
         info_box = tk.LabelFrame(self, text="info box", bg='grey')
         info_box.grid(row=0, column=2, padx=frame_boarder,
@@ -352,17 +375,40 @@ class window_main(tk.Tk):
         self.lable_info_puls.grid(
             row=0, column=1, padx=3, pady=3, rowspan=3)  # columnspan=3   rowspan=3
 
-        puls_button = tk.Button(info_box, text="set Puls sequenz",
-                                command=win_seq_puls.windows_file)  # windows_file)
-        puls_button.grid(row=3, column=0, columnspan=2, padx=2, pady=2)
+        type_sequenz = self.get_values()["sequenz"]["sequenz"]
+        self.lable_info_puls = tk.Label(
+            info_box, text="Puls info:"+type_sequenz, bg='grey')
+        self.lable_info_puls.grid(
+            row=1, column=1, padx=3, pady=3, rowspan=3)  # columnspan=3   rowspan=3
 
-        spin_button = tk.Button(info_box, text="set Spin sequenz",
-                                command=win_seq_spin.windows_file)  # windows_file)
-        spin_button.grid(row=4, column=0, columnspan=2, padx=2, pady=2)
+        # lambda: win_sequenz.Window_seq("spin", self.get_values()
 
-        own_button = tk.Button(info_box, text="set own sequenz",
-                               command=win_seq_own.windows_file)  # windows_file)
-        own_button.grid(row=5, column=0, columnspan=2, padx=2, pady=2)
+        puls_button = tk.Button(info_box, text="set FID sequenz",
+                                command=lambda: Sequenz.window_sequenz("fid", self.get_values(), "88"))  # windows_file)
+        puls_button.grid(row=3, column=0, columnspan=2,
+                         padx=2, pady=2, sticky="ew")
+
+        spin_button = tk.Button(info_box, text="set Spin-Echo sequenz",
+                                command=lambda: Sequenz.window_sequenz("spin", self.get_values(), "8"))  # windows_file)
+        spin_button.grid(row=4, column=0, columnspan=2,
+                         padx=2, pady=2, sticky="ew")
+
+        spin_button = tk.Button(info_box, text="set Comp. Puls sequenz",
+                                command=lambda: Sequenz.window_sequenz("comp", self.get_values(), "8"))  # windows_file)
+        spin_button.grid(row=5, column=0, columnspan=2,
+                         padx=2, pady=2, sticky="ew")
+
+        spin_button = tk.Button(info_box, text="set Spin_Echo phase seq.",
+                                command=lambda: Sequenz.window_sequenz("spin_phase", self.get_values()))  # windows_file)
+        spin_button.grid(row=6, column=0, columnspan=2,
+                         padx=2, pady=2, sticky="ew")
+
+        own_number_puls = tk.Entry(info_box, fg="black", bg="white")
+        own_number_puls.grid(row=7, column=1, sticky="ew")
+        own_button = tk.Button(info_box, text="own sequenz \n number of Pulses:",
+                               command=lambda: Sequenz.window_sequenz("own", self.get_values(), own_number_puls.get()))  # windows_file)
+        own_button.grid(row=7, column=0,
+                        padx=2, pady=2, sticky="ew")
 
         self.update()
         logger_win_main.info(
@@ -374,6 +420,12 @@ class window_main(tk.Tk):
         frame_plot = tk.Frame(self, bg='grey')  # , width=100, height=300, )
         frame_plot.grid(row=1, column=1, sticky="nsew",
                         columnspan=2, rowspan=2, padx=2, pady=2)
+        frame_plot.grid_columnconfigure(0, weight=1, minsize=300)
+        frame_plot.grid_columnconfigure(1, weight=1, minsize=300)
+
+        frame_plot.grid_rowconfigure(0, weight=1, minsize=10)
+        frame_plot.grid_rowconfigure(1, weight=100, minsize=300)
+        frame_plot.grid_rowconfigure(2, weight=1, minsize=10)
 
         plot_text = tk.Label(frame_plot, text="Results of last run",
                              foreground="green", background="white", font=("Arial Bold", 10))
@@ -442,8 +494,8 @@ class window_main(tk.Tk):
         self.button_run.pack(fill="x", padx=2, pady=2)
 
         def run_butten(self):
-            #print("run butten pressed to start measurment")
-            run_external.send_sdr(self.get_values())
+            # print("run butten pressed to start measurment")
+            run_external.send_sdr(self.get_values(), self.value_sequenz)
             self.plot_update()
 
         button_run = tk.Button(self.frame_Buttens, text="RUN ", activebackground="red",
@@ -459,7 +511,7 @@ class window_main(tk.Tk):
         plot_button.pack(fill="x", padx=2, pady=2)
 
         exit_button = tk.Button(
-            self.frame_Buttens, text="Save & Close", command=save_quit_all)  # self.destroy)
+            self.frame_Buttens, text="Save & Close", command=self.save_quit_all)  # self.destroy)
         # exit_button = tk.Button(self, text="Beenden", command=self.quit)#.destroy) #self.quit
         # .grid(row=3,  padx=2, pady=2, sticky="ew")
         exit_button.pack(fill="x", padx=2, pady=2)
@@ -502,6 +554,15 @@ class window_main(tk.Tk):
         # gread GUI and save to class Value_Settings
         value_set.save_settings = self.get_values()
 
+        # save Sequenz data to Experiment strukture
+        storage = file_set.main_data_path  # "Storage_vault"
+        path = os.path.join(os.path.dirname(sys.argv[0]), storage)
+        experiment_path = os.path.join(path, sample, experiment, data)
+        print("experiment_path in save_measurment \n", experiment_path)
+
+        var_sequenz = Sequenz.save2cfg(
+            file="setting_sequenz.cfg", file_path=experiment_path)
+
         self.saved_poup = tk.Label(
             self.frame_measure, text='settings saved', font=(7), background="chartreuse4")
         self.saved_poup.grid(row=5, column=1, padx=5,
@@ -512,7 +573,7 @@ class window_main(tk.Tk):
         # select settings.cfg
 
         path_settings = os.path.abspath(os.path.dirname(sys.argv[0]))
-        storage = file_set.main_data_path
+        storage = file_set.main_data_path  # "Storage_vault"
 
         path = os.path.join(path_settings, storage)
         path_settings = filedialog.askopenfilename(
@@ -757,7 +818,7 @@ class window_main(tk.Tk):
         data_amplitude = [float(data[i][0].split(",")[1].replace('"', ''))
                           for i, val in enumerate(data)]
 
-        #test = [print(val) for val in data_value]
+        # test = [print(val) for val in data_value]
 
         # data_fequency = [float(data[i][0]) for i, val in enumerate(data)]
         # data_amplitude = [float(data[i][1]) for i, val in enumerate(data)]
@@ -896,10 +957,10 @@ class window_main(tk.Tk):
         #    self, sample=path, experiment=experiment, data=cycle)
 
         # logger
-        log_text = "set storage "+"\n"
-        log_text = log_text + " path " + path + "\n"
-        log_text = log_text + " experiment " + experiment + "\n"
-        log_text = log_text + " cycle " + cycle + "\n"
+        log_text = "__ set storage __"+"\n"
+        log_text = log_text + " path: " + path + "\n"
+        log_text = log_text + " experiment: " + experiment + "\n"
+        log_text = log_text + " cycle: " + cycle + "\n"
         self.logtext_area.insert(tk.INSERT, log_text)
         logger_value.info(log_text)
 
@@ -926,12 +987,36 @@ class window_main(tk.Tk):
             text="Experiment: "+value_set._load_experiment)
         self.lable_info_data.config(text="Daten: "+value_set._load_data)
 
+        # read back sequenz data from entery Window
+        self.value_sequenz = Sequenz.save2cfg()
+
+        type_sequenz = self.value_sequenz["setting"]["sequenz_type"]
+        self.lable_info_puls.config(text="Puls info: "+type_sequenz)
+
         # update again after fixed time "autosave automatikaly"
         self.after(window_main.time_autosave, self.autosave)
 
-    def close():
-        print("close all windows")
-        self.destroy()
+        # logger
+        # log_text = "saved all Parameters"+"\n"
+        # log_text += "______________________ \n"
+        # self.logtext_area.insert(tk.INSERT, log_text)
+        # logger_value.info(log_text)
+
+    def save_all(self):
+        # save all parameters to file
+        self.save_measurment()
+        print("save all")
+
+    def save_quit_all(self):
+        print("test")
+
+        # save all parameters to file
+        self.save_measurment()
+        print("save all parameters to file")
+
+        # close all windows
+        print("closing all windows")
+        sys.exit()
 
 
 # show window, wait for user imput
